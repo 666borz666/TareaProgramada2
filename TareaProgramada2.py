@@ -1,6 +1,6 @@
 #Creado por: Daniel Campos y Alejandro Madrigal
-#Creación: 10-10-2023
-#Ultima modificación: 13-10-2023
+#Creación: 10-10-2023 10:00 pm
+#Ultima modificación: 12-10-2023 9:00 am
 #Versión: 3.12.0
 #Importacion de librerias
 import tkinter as tk
