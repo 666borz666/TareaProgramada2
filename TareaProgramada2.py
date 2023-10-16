@@ -5,41 +5,41 @@
 #Importacion de librerias
 import tkinter as tk
 #Definicion de funciones
-def estudiantes_por_sede():
+def estudiantesSede():
     return
 
-def estudiantes_de_carrera_por_sede():
+def estudiantesCarrera():
     return
 
-def crear_mentores():
+def crearMentores():
     return
 
-def asignar_mentores():
+def asignarMentores():
     return
 
-def actualizar_estudiante():
+def actualizarEstudiante():
     return
 
-def generar_reportes():
+def generarReportes():
     return
 
-def crear_base_de_datos():
+def crearBaseDatos():
     return
 
-def enviar_correo():
+def enviarCorreo():
     return
 #Interfaz gráfica
 ventana = tk.Tk()
 ventana.title("Atención a la Generación 2024")
 ventana.attributes('-fullscreen', True)
-boton1 = tk.Button(ventana, text="Estudiantes por sede", command=estudiantes_por_sede)
-boton2 = tk.Button(ventana, text="Estudiantes de carrera por sede", command=estudiantes_de_carrera_por_sede, state="disabled")
-boton3 = tk.Button(ventana, text="Crear mentores", command=crear_mentores, state="disabled")
-boton4 = tk.Button(ventana, text="Asignar mentores", command=asignar_mentores, state="disabled")
-boton5 = tk.Button(ventana, text="Actualizar estudiante", command=actualizar_estudiante, state="disabled")
-boton6 = tk.Button(ventana, text="Generar reportes", command=generar_reportes)
-boton7 = tk.Button(ventana, text="Crear base de datos en Excel", command=crear_base_de_datos)
-boton8 = tk.Button(ventana, text="Enviar correo", command=enviar_correo)
+boton1 = tk.Button(ventana, text="Estudiantes por sede", command=estudiantesSede)
+boton2 = tk.Button(ventana, text="Estudiantes de carrera por sede", command=estudiantesCarrera, state="disabled")
+boton3 = tk.Button(ventana, text="Crear mentores", command=crearMentores, state="disabled")
+boton4 = tk.Button(ventana, text="Asignar mentores", command=asignarMentores, state="disabled")
+boton5 = tk.Button(ventana, text="Actualizar estudiante", command=actualizarEstudiante, state="disabled")
+boton6 = tk.Button(ventana, text="Generar reportes", command=generarReportes)
+boton7 = tk.Button(ventana, text="Crear base de datos en Excel", command=crearBaseDatos)
+boton8 = tk.Button(ventana, text="Enviar correo", command=enviarCorreo)
 boton9 = tk.Button(ventana, text="Salir", command=ventana.quit)
 
 boton1.pack()
