@@ -6,28 +6,28 @@
 import tkinter as tk
 #Definicion de funciones
 def estudiantes_por_sede():
-    pass
+    return
 
 def estudiantes_de_carrera_por_sede():
-    pass
+    return
 
 def crear_mentores():
-    pass
+    return
 
 def asignar_mentores():
-    pass
+    return
 
 def actualizar_estudiante():
-    pass
+    return
 
 def generar_reportes():
-    pass
+    return
 
 def crear_base_de_datos():
-    pass
+    return
 
 def enviar_correo():
-    pass
+    return
 #Interfaz gráfica
 ventana = tk.Tk()
 ventana.title("Atención a la Generación 2024")
