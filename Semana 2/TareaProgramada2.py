@@ -4,29 +4,70 @@
 #Versión: 3.12.0
 #Importacion de librerias
 import tkinter as tk
+import requests
 #Definicion de funciones
 def estudiantesSede():
+    """
+    Función: Define la cantidad de estudiantes de primer ingreso que entran por sede.
+    Entradas:
+    Salidas:
+    """
     return
 
 def estudiantesCarrera():
+    """
+    Función: Crea dinámicamente la base de datos de todos los admitidos en cada carrera por cada sede.
+    Entradas:
+    Salidas:
+    """
     return
 
 def crearMentores():
+    """
+    Función: Dada la cantidad de estudiantes de primer ingreso generados por sede en cada carrera.
+    Entradas:
+    Salidas:
+    """
     return
 
 def asignarMentores():
+    """
+    Función: Según la cantidad de mentores, asigna a los estudiantes con misma carrera y sede de forma distribuida a los mentores.
+    Entradas:
+    Salidas:
+    """
     return
 
 def actualizarEstudiante():
+    """
+    Función: Muestra los datos en una ventana de formulario, donde sea posible modificar: nombre completo, teléfono, correo y guarda los cambios luego de verificar su formato.
+    Entradas:
+    Salidas:
+    """
     return
 
 def generarReportes():
+    """
+    Función: Genera los reportes en HTML.
+    Entradas:
+    Salidas:
+    """
     return
 
 def crearBaseDatos():
+    """
+    Función: Crea un archivo string a guardar en disco duro con extensión ".csv".
+    Entradas:
+    Salidas:
+    """
     return
 
 def enviarCorreo():
+    """
+    Función: Solicita el correo de un encargado y adjunta el ".csv".
+    Entradas:
+    Salidas:
+    """
     return
 #Interfaz gráfica
 ventana = tk.Tk()
