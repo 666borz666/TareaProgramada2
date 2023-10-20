@@ -12,7 +12,7 @@ def estudiantesSede():
     Entradas:
     Salidas:
     """
-    return
+    return boton2.config(state="normal")
 
 def estudiantesCarrera():
     """
