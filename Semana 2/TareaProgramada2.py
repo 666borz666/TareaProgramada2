@@ -6,6 +6,7 @@
 import tkinter as tk
 import requests
 #Definicion de funciones
+#Cuando hay que desbloquear botones, se hace hasta que estén los datos bien ingresados. Esto es solo una prueba para ver que funcione el desbloqueo de botones.
 #1
 def estudiantesSede():
     """
