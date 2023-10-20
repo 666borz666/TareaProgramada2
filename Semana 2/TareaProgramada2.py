@@ -6,14 +6,15 @@
 import tkinter as tk
 import requests
 #Definicion de funciones
+#1
 def estudiantesSede():
     """
     Función: Define la cantidad de estudiantes de primer ingreso que entran por sede.
     Entradas:
     Salidas:
     """
-    return boton2.config(state="normal")
-
+    return boton2.config(state="normal"), boton3.config(state="normal"), boton5.config(state="normal")
+#2
 def estudiantesCarrera():
     """
     Función: Crea dinámicamente la base de datos de todos los admitidos en cada carrera por cada sede.
@@ -21,15 +22,15 @@ def estudiantesCarrera():
     Salidas:
     """
     return
-
+#3
 def crearMentores():
     """
     Función: Dada la cantidad de estudiantes de primer ingreso generados por sede en cada carrera.
     Entradas:
     Salidas:
     """
-    return
-
+    return boton4.config(state="normal"), 
+#4
 def asignarMentores():
     """
     Función: Según la cantidad de mentores, asigna a los estudiantes con misma carrera y sede de forma distribuida a los mentores.
@@ -37,7 +38,7 @@ def asignarMentores():
     Salidas:
     """
     return
-
+#5
 def actualizarEstudiante():
     """
     Función: Muestra los datos en una ventana de formulario, donde sea posible modificar: nombre completo, teléfono, correo y guarda los cambios luego de verificar su formato.
@@ -45,7 +46,7 @@ def actualizarEstudiante():
     Salidas:
     """
     return
-
+#6
 def generarReportes():
     """
     Función: Genera los reportes en HTML.
@@ -53,7 +54,7 @@ def generarReportes():
     Salidas:
     """
     return
-
+#7
 def crearBaseDatos():
     """
     Función: Crea un archivo string a guardar en disco duro con extensión ".csv".
@@ -61,7 +62,7 @@ def crearBaseDatos():
     Salidas:
     """
     return
-
+#8
 def enviarCorreo():
     """
     Función: Solicita el correo de un encargado y adjunta el ".csv".
