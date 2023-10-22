@@ -21,7 +21,7 @@ carreras = pd.read_excel(excel)
 asignacionesEstudiantes = []
 cantidadEstudiantes = None 
 def estudiantesSede():
-    def asignar_estudiantes():
+    def asignarEstudiantes():
         global asignacionesEstudiantes 
         totalEstudiantes = int(cantidadEstudiantes_entry.get())
         sede = sedeSeleccionada.get()
@@ -52,13 +52,13 @@ def estudiantesSede():
     etiquetaCantidad.pack()
     cantidadEstudiantes_entry = tk.Entry(ventanaEstudiantes)
     cantidadEstudiantes_entry.pack()
-    botonAsignarEstudiantes = tk.Button(ventanaEstudiantes, text="Asignar Estudiantes", command=asignar_estudiantes)
+    botonAsignarEstudiantes = tk.Button(ventanaEstudiantes, text="Asignar Estudiantes", command=asignarEstudiantes)
     botonAsignarEstudiantes.pack()
 excel = r'C:\Users\ADIC\Documents\GitHub\TareaProgramada2\Main (no listo)\sedes.xlsx'
 carreras = pd.read_excel(excel)
 
 def estudiantesCarrera():
-    def mostrar_estudiantes_de_sede():
+    def mostrarEstudiantesSede():
         sedeElegida = sedeSeleccionada.get()
         if sedeElegida in carreras:
             sedeCarreras = carreras[sedeElegida].dropna().index.tolist()
@@ -80,7 +80,7 @@ def estudiantesCarrera():
                 carnet = f"2024{opcionesSedes.index(sedeElegida) + 1:02d}{random.randint(1000, 9999)}"
                 nombreCompleto = (fake.last_name(), fake.last_name(), fake.first_name())
                 telefono = generarTelefono(telefonosGenerados)
-                correo = generar_correo(nombreCompleto[2], nombreCompleto[0])
+                correo = generarCorreo(nombreCompleto[2], nombreCompleto[0])
                 estudiantesGenerados.append({'Carnet': carnet,'Nombre Completo': f"{nombreCompleto[0]} {nombreCompleto[1]} {nombreCompleto[2]}",'Carrera': nombreCarrera,'Teléfono': telefono,'Correo Electrónico': correo,'Carnet de Mentor': "0",})
             for estudiante in estudiantesGenerados:
                 tabla.insert("", "end", values=(estudiante['Carnet'], estudiante['Nombre Completo'], estudiante['Carrera'], estudiante['Teléfono'], estudiante['Correo Electrónico'], estudiante['Carnet de Mentor']))
@@ -95,7 +95,7 @@ def estudiantesCarrera():
     sedeSeleccionada.set(opcionesSedes[0])
     listaSede = ttk.Combobox(ventanaSede, textvariable=sedeSeleccionada, values=opcionesSedes)
     listaSede.pack()
-    botonConfirmarSede = tk.Button(ventanaSede, text="Mostrar Estudiantes", command=mostrar_estudiantes_de_sede)
+    botonConfirmarSede = tk.Button(ventanaSede, text="Mostrar Estudiantes", command=mostrarEstudiantesSede)
     botonConfirmarSede.pack()
     
 def cantidadAdmitidos(sede, carrera):
@@ -115,7 +115,7 @@ def generarTelefono(telefonosGenerados):
             telefonosGenerados.add(telefono)
             return telefono
 
-def generar_correo(nombre, apellido):
+def generarCorreo(nombre, apellido):
     correo = nombre[:2] + apellido.split()[0] + "@estudiantec.cr"
     return correo
 
