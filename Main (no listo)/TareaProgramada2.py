@@ -41,12 +41,11 @@ def estudiantesSede():
             # Reducir el número de estudiantes restantes
             estudiantes_restantes -= 1
 
-        # Agregar información a la lista global
-        asignaciones_estudiantes.append({
-            'sede': sede,
-            'cantidad_estudiantes': cantidad_total_estudiantes,
-            'asignaciones': estudiantes_asignados
-        })
+        # Almacenar información de asignación de estudiantes en la variable global
+        asignaciones_estudiantes = asignaciones_estudiantes + [{
+            'carrera': carrera,
+            'cantidad_estudiantes': cantidad_estudiantes
+        } for carrera, cantidad_estudiantes in estudiantes_asignados.items()]
 
         # Crear una ventana emergente para mostrar los resultados
         ventana_resultados = tk.Toplevel(ventana)
@@ -92,47 +91,70 @@ def estudiantesSede():
     boton_asignar_estudiantes = tk.Button(ventana_estudiantes, text="Asignar Estudiantes", command=asignar_estudiantes)
     boton_asignar_estudiantes.pack()
 
+archivo_excel = r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\sedes.xlsx'
+df_carreras = pd.read_excel(archivo_excel)
+
 def estudiantesCarrera():
     def mostrar_estudiantes_de_sede():
         # Obtener la sede seleccionada
         sede_elegida = sede_seleccionada.get()
 
-        # Obtener la cantidad total de estudiantes asignada por el usuario en la opción 1
-        cantidad_total_estudiantes = int(asignaciones_estudiantes[-1]['cantidad_estudiantes'])
-        
-        # Obtener las asignaciones aleatorias realizadas en la opción 1
-        asignaciones_opcion_1 = asignaciones_estudiantes[-1]['asignaciones']
+        # Verificar si la sede seleccionada se encuentra en el archivo Excel
+        if sede_elegida in df_carreras:
+            # Obtener las carreras asociadas a la sede
+            carreras_sede = df_carreras[sede_elegida].dropna().index.tolist()
 
-        # Crear una ventana emergente para mostrar los nombres y carnés de los estudiantes de la sede en una tabla
-        ventana_resultados = tk.Toplevel(ventana)
-        ventana_resultados.title("Estudiantes de la Sede")
+            # Seleccionar una carrera aleatoria
+            nombre_carrera = random.choice(carreras_sede)
 
-        # Crear una tabla
-        tabla = ttk.Treeview(ventana_resultados, columns=["Carné", "Nombre Completo", "Carrera"])
-        tabla.heading("#1", text="Carné")
-        tabla.heading("#2", text="Nombre Completo")
-        tabla.heading("#3", text="Carrera")
-        tabla.pack()
+            # Crear una ventana emergente para mostrar los datos de los estudiantes de la sede en una tabla
+            ventana_resultados = tk.Toplevel(ventana)
+            ventana_resultados.title("Estudiantes de la Sede")
 
-        for carrera, cantidad_asignada in asignaciones_opcion_1.items():
+            # Crear una tabla
+            tabla = ttk.Treeview(ventana_resultados, columns=["Carné", "Nombre Completo", "Carrera", "Teléfono", "Correo Electrónico", "Carné de Mentor"])
+            tabla.heading("#1", text="Carné")
+            tabla.heading("#2", text="Nombre Completo")
+            tabla.heading("#3", text="Carrera")
+            tabla.heading("#4", text="Teléfono")
+            tabla.heading("#5", text="Correo Electrónico")
+            tabla.heading("#6", text="Carné de Mentor")
+            tabla.pack()
+
+            # Obtener la cantidad de admitidos en la carrera seleccionada en la opción 1 (estudiantesSede)
+            admitidos_carrera_seleccionada = obtener_cantidad_admitidos_carrera(sede_elegida, nombre_carrera)
+
             estudiantes_generados = []
-            for _ in range(cantidad_asignada):
+            telefonos_generados = set()  # Utilizado para evitar duplicados de teléfonos
+
+            for _ in range(admitidos_carrera_seleccionada):
                 # Generar un número de carné que refleje el año y el número de sede, junto con un número de 4 dígitos aleatorio
                 carnet = f"2024{opciones_sedes.index(sede_elegida) + 1:02d}{random.randint(1000, 9999)}"
 
                 # Generar nombres completos aleatorios
                 nombre_completo = (fake.last_name(), fake.last_name(), fake.first_name())
 
-                # Agregar el estudiante a la lista
+                # Generar teléfono y correo electrónico
+                telefono = generar_telefono(telefonos_generados)
+                correo = generar_correo(nombre_completo[2], nombre_completo[0])
+
+                # Utilizar el nombre de la carrera seleccionada
+                # como el valor de la columna 'Carrera' en los datos generados
                 estudiantes_generados.append({
                     'Carné': carnet,
                     'Nombre Completo': f"{nombre_completo[0]} {nombre_completo[1]} {nombre_completo[2]}",
-                    'Carrera': carrera,
+                    'Carrera': nombre_carrera,
+                    'Teléfono': telefono,
+                    'Correo Electrónico': correo,
+                    'Carné de Mentor': "0",
                 })
 
             for estudiante in estudiantes_generados:
                 # Insertar los datos del estudiante en la tabla
-                tabla.insert("", "end", values=(estudiante['Carné'], estudiante['Nombre Completo'], estudiante['Carrera']))
+                tabla.insert("", "end", values=(estudiante['Carné'], estudiante['Nombre Completo'], estudiante['Carrera'], estudiante['Teléfono'], estudiante['Correo Electrónico'], estudiante['Carné de Mentor']))
+        else:
+            # Manejar el caso en el que la sede no se encuentra en el archivo Excel
+            messagebox.showerror("Error", f"La sede '{sede_elegida}' no se encuentra en el archivo Excel.")
 
     # Crear una ventana emergente para seleccionar la sede
     ventana_seleccion_sede = tk.Toplevel(ventana)
@@ -159,21 +181,31 @@ def estudiantesCarrera():
     # Botón para confirmar la selección de sede y generar estudiantes
     boton_confirmar_sede = tk.Button(ventana_seleccion_sede, text="Mostrar Estudiantes", command=mostrar_estudiantes_de_sede)
     boton_confirmar_sede.pack()
+
+
 # Función para obtener la cantidad de estudiantes por carrera desde la opción 1
-def obtener_cantidad_estudiantes_por_carrera(sede_elegida):
-    if sede_elegida in df_carreras.columns:
-        # Recuperar los datos de estudiantes por carrera para la sede seleccionada
-        cantidad_estudiantes_por_carrera = df_carreras[sede_elegida].dropna().to_dict()
+def obtener_cantidad_admitidos_carrera(sede, carrera):
+    # Obtén la información de la cantidad de estudiantes admitidos para la sede y carrera dadas
+    sede_info = [info for info in asignaciones_estudiantes if info['sede'] == sede]
+    if sede_info:
+        asignaciones = sede_info[0]['asignaciones']
+        if carrera in asignaciones:
+            return asignaciones[carrera]
+    return 0  # Devuelve 0 si no se encuentra información
+def generar_telefono(telefonos_generados):
+    # Generar un teléfono que comience con 6, 7, 8 o 9 y tenga 7 dígitos distintos
+    while True:
+        primer_digito = random.choice("6789")
+        otros_digitos = random.sample("0123456789", 7)
+        telefono = primer_digito + ''.join(otros_digitos)
+        if telefono not in telefonos_generados:
+            telefonos_generados.add(telefono)
+            return telefono
 
-        # Convertir los valores a enteros
-        cantidad_estudiantes_por_carrera = {carrera: int(cantidad) for carrera, cantidad in cantidad_estudiantes_por_carrera.items()}
-
-        # Sumar la cantidad de estudiantes en todas las carreras
-        total_estudiantes = sum(cantidad_estudiantes_por_carrera.values())
-        return total_estudiantes
-    else:
-        # La sede no existe en los datos, manejar el caso en consecuencia
-        return 0  # Devuelve 0 u otro valor predeterminado
+def generar_correo(nombre, apellido):
+    # Generar un correo con las 2 primeras letras del nombre, primer apellido y dominio
+    correo = nombre[:2] + apellido.split()[0] + "@estudiantec.cr"
+    return correo
 def crearMentores():
     return
 
