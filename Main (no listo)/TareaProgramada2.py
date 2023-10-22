@@ -16,7 +16,7 @@ fake = Faker()
 cantidad_estudiantes = None
 print(os.getcwd())
 #Funciones
-excel = r'sedes.xlsx'
+excel = r'C:\Users\ADIC\Documents\GitHub\TareaProgramada2\Main (no listo)\sedes.xlsx'
 df_carreras = pd.read_excel(excel)
 asignaciones_estudiantes = []
 cantidad_estudiantes_entry = None 
@@ -55,7 +55,7 @@ def estudiantesSede():
     cantidad_estudiantes_entry.pack()
     boton_asignar_estudiantes = tk.Button(ventana_estudiantes, text="Asignar Estudiantes", command=asignar_estudiantes)
     boton_asignar_estudiantes.pack()
-excel = r'sedes.xlsx'
+excel = r'C:\Users\ADIC\Documents\GitHub\TareaProgramada2\Main (no listo)\sedes.xlsx'
 df_carreras = pd.read_excel(excel)
 def estudiantesCarrera():
     def mostrar_estudiantes_de_sede():
