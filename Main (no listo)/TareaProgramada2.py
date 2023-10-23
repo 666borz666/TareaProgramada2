@@ -14,7 +14,7 @@ import pandas as pd
 #Variables globales
 fake = Faker()
 cantidadEstudiantes = None
-excel = r'C:\Users\ADIC\Documents\GitHub\TareaProgramada2\Main (no listo)\sedes.xlsx'
+excel = r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\sedes.xlsx'
 carreras = pd.read_excel(excel)
 asignacionesEstudiantes = []
 cantidadEstudiantes = None 
