@@ -11,6 +11,8 @@ import random
 from faker import Faker
 import pandas as pd
 import pickle
+import os
+from PIL import Image, ImageTk
 #Variables globales
 fake = Faker()
 cantidadEstudiantes = None
@@ -246,7 +248,83 @@ def asignarMentores():
     tabla.heading("#6", text="Nombre del Mentor")
     tabla.pack()
 def actualizarEstudiante():
-    return
+    ventana_actualizar = tk.Toplevel(ventana)
+    ventana_actualizar.title("Actualizar Estudiante")
+
+    tk.Label(ventana_actualizar, text="Carné del Estudiante:").pack()
+    carné_var = tk.StringVar()
+    carné_entry = tk.Entry(ventana_actualizar, textvariable=carné_var)
+    carné_entry.pack()
+
+    # Función para buscar y modificar al estudiante
+    def buscar_y_modificar_estudiante():
+        carné = carné_var.get()
+
+        estudiante_encontrado = None
+        tipo_estudiante = ""
+
+        # Buscar al estudiante por carné en la lista de estudiantesGenerados
+        for estudiante in estudiantesGenerados:
+            if estudiante['Carnet'] == carné:
+                estudiante_encontrado = estudiante
+                tipo_estudiante = "Primer Ingreso"
+                break
+
+        if estudiante_encontrado is None:
+            # Si no se encontró en la lista de estudiantesGenerados, buscar en la lista de mentoresGenerados
+            for mentor in mentoresGenerados:
+                if mentor['Carnet'] == carné:
+                    estudiante_encontrado = mentor
+                    tipo_estudiante = "Mentor"
+                    break
+
+        if estudiante_encontrado is not None:
+            tk.Label(ventana_actualizar, text=f"Tipo de Estudiante: {tipo_estudiante}").pack()
+            tk.Label(ventana_actualizar, text="Nombre Completo:").pack()
+            nombre_var = tk.StringVar(value=estudiante_encontrado['Nombre Completo'])
+            nombre_entry = tk.Entry(ventana_actualizar, textvariable=nombre_var)
+            nombre_entry.pack()
+
+            if tipo_estudiante == "Mentor":
+                # Permitir modificar correo solo para mentores
+                tk.Label(ventana_actualizar, text="Correo Electrónico:").pack()
+                correo_var = tk.StringVar(value=estudiante_encontrado['Correo Electrónico'])
+                correo_entry = tk.Entry(ventana_actualizar, textvariable=correo_var)
+                correo_entry.pack()
+
+                # Función para guardar los cambios (solo para mentores)
+                def guardar_cambios():
+                    nombre = nombre_var.get()
+                    correo = correo_var.get()
+
+                    # Actualizar los datos del mentor
+                    estudiante_encontrado['Nombre Completo'] = nombre
+                    estudiante_encontrado['Correo Electrónico'] = correo
+
+                    messagebox.showinfo("Éxito", "Los cambios se han guardado exitosamente.")
+                    ventana_actualizar.destroy()
+            else:
+                # Función para guardar los cambios (para estudiantes de primer ingreso)
+                def guardar_cambios():
+                    nombre = nombre_var.get()
+
+                    # Actualizar los datos del estudiante (de primer ingreso)
+                    estudiante_encontrado['Nombre Completo'] = nombre
+
+                    messagebox.showinfo("Éxito", "Los cambios se han guardado exitosamente.")
+                    ventana_actualizar.destroy()
+
+            # Botón para guardar los cambios
+            guardar_button = tk.Button(ventana_actualizar, text="Guardar Cambios", command=guardar_cambios)
+            guardar_button.pack()
+        else:
+            messagebox.showerror("Error", "El carné ingresado no se encuentra en la lista de estudiantes ni mentores.")
+
+    buscar_button = tk.Button(ventana_actualizar, text="Buscar Estudiante", command=buscar_y_modificar_estudiante)
+    buscar_button.pack()
+
+    ventana_actualizar.mainloop()
+
 
 def generarReportes():
     return
@@ -257,28 +335,62 @@ def crearBaseDatos():
 def enviarCorreo():
     return  
 
-#Interfaz gráfica
 ventana = tk.Tk()
 ventana.title("Atención a la Generación 2024")
-ventana.attributes('-fullscreen', True)
-boton1 = tk.Button(ventana, text="Estudiantes por sede", command=estudiantesSede)
-boton2 = tk.Button(ventana, text="Estudiantes de carrera por sede", command=estudiantesCarrera)
-boton3 = tk.Button(ventana, text="Crear mentores", command=crearMentores)
-boton4 = tk.Button(ventana, text="Asignar mentores", command=asignarMentores)
-boton5 = tk.Button(ventana, text="Actualizar estudiante", command=actualizarEstudiante, state="disabled")
-boton6 = tk.Button(ventana, text="Generar reportes", command=generarReportes)
-boton7 = tk.Button(ventana, text="Crear base de datos en Excel", command=crearBaseDatos)
-boton8 = tk.Button(ventana, text="Enviar correo", command=enviarCorreo)
-boton9 = tk.Button(ventana, text="Salir", command=ventana.quit)
+ventana.geometry("1200x600")  # Tamaño razonable
 
-boton1.pack()
-boton2.pack()
-boton3.pack()
-boton4.pack()
-boton5.pack()
-boton6.pack()
-boton7.pack()
-boton8.pack()
-boton9.pack()
+# Cargar la imagen de fondo
+imagen_fondo = Image.open("tec.png")
+imagen_fondo = imagen_fondo.resize((ventana.winfo_screenwidth(), ventana.winfo_screenheight()))
+imagen_fondo = ImageTk.PhotoImage(imagen_fondo)
+
+# Crear una etiqueta para mostrar la imagen de fondo
+etiqueta_fondo = tk.Label(ventana, image=imagen_fondo)
+etiqueta_fondo.place(x=0, y=0, relwidth=1, relheight=1)
+
+# Crear un Frame para el fondo gris en el centro
+fondo_gris = tk.Frame(ventana, bg="#D0ECE7")
+fondo_gris.place(relx=0.25, rely=0, relwidth=0.5, relheight=1)
+
+# Crear un Frame para los botones en la columna del centro
+frame_botones = tk.Frame(fondo_gris, bg="#D0ECE7")
+frame_botones.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.8)
+logo_image = Image.open("integratec.png")
+logo_image = logo_image.resize((int(ventana.winfo_screenwidth() * 0.3), int(ventana.winfo_screenheight() * 0.2)))
+logo_image = ImageTk.PhotoImage(logo_image)
+
+etiqueta_logo = tk.Label(fondo_gris, image=logo_image, bg="#D0ECE7")
+etiqueta_logo.pack(pady=(30, 10))  # Espaciado en la parte superior
+
+# Función para crear botones con un estilo diferente
+def create_button(text, command):
+    return tk.Button(frame_botones, text=text, command=command, bg="#A6CFCF", fg="black", relief="raised", font=("Arial", 12))
+
+# Crear botones con estilo
+# Crear botones con estilo y asignar funciones al clic
+boton1 = ttk.Button(fondo_gris, text="Estudiantes por sede", command=estudiantesSede)
+boton2 = ttk.Button(fondo_gris, text="Estudiantes de carrera por sede", command=estudiantesCarrera)
+boton3 = ttk.Button(fondo_gris, text="Crear mentores", command=crearMentores)
+boton4 = ttk.Button(fondo_gris, text="Asignar mentores", command=asignarMentores)
+boton5 = ttk.Button(fondo_gris, text="Actualizar estudiante", command=actualizarEstudiante)
+boton6 = ttk.Button(fondo_gris, text="Generar reportes", command=generarReportes)
+boton7 = ttk.Button(fondo_gris, text="Crear base de datos en Excel", command=crearBaseDatos)
+boton8 = ttk.Button(fondo_gris, text="Enviar correo", command=enviarCorreo)
+
+
+boton1.pack(fill="both", expand=True)
+boton2.pack(fill="both", expand=True)
+boton3.pack(fill="both", expand=True)
+boton4.pack(fill="both", expand=True)
+boton5.pack(fill="both", expand=True)
+boton6.pack(fill="both", expand=True)
+boton7.pack(fill="both", expand=True)
+boton8.pack(fill="both", expand=True)
+
+
 
 ventana.mainloop()
+
+
+
+
