@@ -22,6 +22,8 @@ asignacionesEstudiantes = []
 cantidadEstudiantes = None 
 cantidad_estudiantes = 0
 #Funciones
+estudiantesPorSede = {}
+
 def estudiantesSede():
     global asignacionesEstudiantes
     ventanaEstudiantes = tk.Toplevel(ventana)
@@ -38,39 +40,55 @@ def estudiantesSede():
     etiquetaCantidad.pack()
     cantidadEstudiantes_entry = tk.Entry(ventanaEstudiantes)
     cantidadEstudiantes_entry.pack()
+
     def asignarEstudiantes():
         sede = sedeSeleccionada.get()
         cantidad_estudiantes = int(cantidadEstudiantes_entry.get())
         sedeCarreras = carreras[sede].dropna().index.tolist()
         estudiantesAsignados = {carrera: 0 for carrera in sedeCarreras}
         estudiantesRestantes = cantidad_estudiantes
+
         while estudiantesRestantes > 0:
             carreraAleatoria = random.choice(sedeCarreras)
             estudiantesAsignados[carreraAleatoria] += 1
             estudiantesRestantes -= 1
+
         asignacion_sede = {'sede': sede, 'asignaciones': estudiantesAsignados}
         asignacionesEstudiantes.append(asignacion_sede)
+
+        # Verificar si ya existe una lista de estudiantes para esta sede
+        if sede in estudiantesPorSede:
+            estudiantesPorSede[sede].append(estudiantesAsignados)
+        else:
+            estudiantesPorSede[sede] = [estudiantesAsignados]
+
         ventanaResultados = tk.Toplevel(ventana)
         ventanaResultados.title("Resultados de Asignación de Estudiantes")
         for carrera, cantidad_estudiantes in estudiantesAsignados.items():
             nombreCarrera = carreras.loc[carrera, sede]
             labelResultado = tk.Label(ventanaResultados, text=f"{nombreCarrera}: {cantidad_estudiantes} estudiantes asignados")
             labelResultado.pack()
+
     botonAsignarEstudiantes = tk.Button(ventanaEstudiantes, text="Asignar Estudiantes", command=asignarEstudiantes)
     botonAsignarEstudiantes.pack()
     botonCerrar = tk.Button(ventanaEstudiantes, text="Cerrar", command=ventanaEstudiantes.destroy)
     botonCerrar.pack()
 if 'estudiantesGenerados' not in globals():
-    estudiantesGenerados = []
+    estudiantesGenerados = {}
+
 def estudiantesCarrera():
     def mostrarSede():
         sedeElegida = sedeSeleccionada.get()
         if sedeElegida in carreras:
-            if not estudiantesGenerados:  # Verificar si la lista ya contiene estudiantes
-                # Generar estudiantes solo si la lista está vacía
+            if sedeElegida not in estudiantesGenerados:
+                estudiantesGenerados[sedeElegida] = []  # Inicializa una lista vacía para la sede si no existe
+
+            if not estudiantesGenerados[sedeElegida]:
+                # Generar estudiantes solo si la lista para esta sede está vacía
                 sedeCarreras = carreras[sedeElegida].dropna().index.tolist()
                 admitidosCarreras = {carrera: cantidadAdmitidos(sedeElegida, carrera) for carrera in sedeCarreras}
                 telefonosGenerados = set()
+
                 for carrera in sedeCarreras:
                     nombreCarrera = carreras.loc[carrera, sedeElegida]
                     for _ in range(admitidosCarreras[carrera]):
@@ -78,7 +96,7 @@ def estudiantesCarrera():
                         nombreCompleto = (fake.last_name(), fake.last_name(), fake.first_name())
                         telefono = generarTelefono(telefonosGenerados)
                         correo = generarCorreo(nombreCompleto[2], nombreCompleto[0])
-                        estudiantesGenerados.append({'Carnet': carnet, 'Nombre Completo': f"{nombreCompleto[0]} {nombreCompleto[1]} {nombreCompleto[2]}", 'Carrera': nombreCarrera, 'Teléfono': telefono, 'Correo Electrónico': correo, 'Carnet de Mentor': "0"})
+                        estudiantesGenerados[sedeElegida].append({'Carnet': carnet, 'Nombre Completo': f"{nombreCompleto[0]} {nombreCompleto[1]} {nombreCompleto[2]}", 'Carrera': nombreCarrera, 'Teléfono': telefono, 'Correo Electrónico': correo, 'Carnet de Mentor': "0"})
 
             # Mostrar los estudiantes en la tabla
             ventanaResultados = tk.Toplevel(ventana)
@@ -91,7 +109,8 @@ def estudiantesCarrera():
             tabla.heading("#4", text="Correo Electrónico")
             tabla.heading("#5", text="Carnet de Mentor")
             tabla.pack()
-            for estudiante in estudiantesGenerados:
+
+            for estudiante in estudiantesGenerados[sedeElegida]:
                 tabla.insert("", "end", values=(estudiante['Carnet'], estudiante['Nombre Completo'], estudiante['Carrera'], estudiante['Teléfono'], estudiante['Correo Electrónico'], estudiante['Carnet de Mentor']))
         else:
             messagebox.showerror("Error", f"La sede '{sedeElegida}' no se encuentra en el archivo Excel.")
@@ -132,19 +151,19 @@ def generarCorreo(nombre, apellido):
 
 if 'estudiantesGenerados' not in globals():
     estudiantesGenerados = []
-if 'mentoresGenerados' not in globals():
-    mentoresGenerados = []
-
+mentoresGenerados = {}
 def crearMentores():
     def mostrarSede():
         sedeElegida = sedeSeleccionada.get()
         if sedeElegida in carreras:
             global estudiantesGenerados, mentoresGenerados  # Asegura que estamos trabajando con las variables globales
-            sedeCarreras = carreras[sedeElegida].dropna().index.tolist()
-            admitidosCarreras = {carrera: cantidadAdmitidos(sedeElegida, carrera) for carrera in sedeCarreras}
+
             # Resto del código sin cambios
             # Esta parte genera mentores si no están generados
-            if not mentoresGenerados:
+            if sedeElegida not in mentoresGenerados:
+                mentoresGenerados[sedeElegida] = []  # Inicializa una lista vacía para la sede si no existe
+
+            if not mentoresGenerados[sedeElegida]:
                 sedeCarreras = carreras[sedeElegida].dropna().index.tolist()
                 admitidosCarreras = {carrera: cantidadAdmitidos(sedeElegida, carrera) for carrera in sedeCarreras}
                 for carrera in sedeCarreras:
@@ -158,24 +177,25 @@ def crearMentores():
                         carnet = f"2023{opcionesSedes.index(sedeElegida) + 1:02d}{random.randint(1000, 9999)}"
                         nombreCompleto = (fake.last_name(), fake.last_name(), fake.first_name())
                         correo = generarCorreo(nombreCompleto[2], nombreCompleto[0])
-                        mentoresGenerados.append({'Carnet': carnet, 'Nombre Completo': f"{nombreCompleto[0]} {nombreCompleto[1]} {nombreCompleto[2]}", 'Carrera': nombreCarrera, 'Correo Electrónico': correo})
+                        mentoresGenerados[sedeElegida].append({'Carnet': carnet, 'Nombre Completo': f"{nombreCompleto[0]} {nombreCompleto[1]} {nombreCompleto[2]}", 'Carrera': nombreCarrera, 'Correo Electrónico': correo})
 
             # Esta parte muestra estudiantes y mentores en la tabla
             ventanaResultados = tk.Toplevel(ventana)
-            ventanaResultados.title("Estudiantes de la Sede")
+            ventanaResultados.title("Mentores de la Sede")
             tabla = ttk.Treeview(ventanaResultados, columns=["Carnet", "Nombre Completo", "Carrera", "Correo Electrónico"])
             tabla.heading("#0", text="Carnet")
             tabla.heading("#1", text="Nombre Completo")
             tabla.heading("#2", text="Carrera")
             tabla.heading("#3", text="Correo Electrónico")
             tabla.pack()
-            admitidosCarreras = {carrera: cantidadAdmitidos(sedeElegida, carrera) for carrera in sedeCarreras}
-            for mentor in mentoresGenerados:
+
+            for mentor in mentoresGenerados[sedeElegida]:
                 tabla.insert("", "end", values=(mentor['Carnet'], mentor['Nombre Completo'], mentor['Carrera'], mentor['Correo Electrónico']))
+
             # Guardar los datos en un archivo .pkl
-            with open('estudiantes.pkl', 'wb') as archivo_pkl:
-                pickle.dump(estudiantesGenerados, archivo_pkl)
-            return estudiantesGenerados  # Devuelve la lista de estudiantes generados
+            with open('mentores.pkl', 'wb') as archivo_pkl:
+                pickle.dump(mentoresGenerados, archivo_pkl)
+
         else:
             messagebox.showerror("Error", f"La sede '{sedeElegida}' no se encuentra en el archivo Excel.")
 
@@ -189,10 +209,8 @@ def crearMentores():
     listaSede = ttk.Combobox(ventanaSede, textvariable=sedeSeleccionada, values=opcionesSedes)
     listaSede.config(width=42)
     listaSede.pack()
-    botonConfirmarSede = tk.Button(ventanaSede, text="Mostrar Estudiantes", command=mostrarSede)
+    botonConfirmarSede = tk.Button(ventanaSede, text="Mostrar Mentores", command=mostrarSede)
     botonConfirmarSede.pack()
-
-
 def asignarMentores():
     def mostrarSede():
         sedeElegida = sedeSeleccionada.get()
@@ -201,23 +219,29 @@ def asignarMentores():
             if not mentoresGenerados:
                 messagebox.showerror("Error", "Primero debes generar mentores usando la función 'crearMentores'.")
             else:
-                # Obtener los estudiantes que tienen "0" en el campo "Carnet de Mentor"
-                estudiantes_para_asignar = [estudiante for estudiante in estudiantesGenerados if estudiante['Carnet de Mentor'] == "0"]
+                if sedeElegida not in estudiantesGenerados:
+                    messagebox.showerror("Error", "Primero debes generar estudiantes para esta sede.")
+                else:
+                    # Obtener los estudiantes de la sede seleccionada
+                    estudiantes_sede = estudiantesGenerados[sedeElegida]
 
-                # Asignar mentores a estos estudiantes, asegurándonos de que sean de la misma carrera
-                for estudiante in estudiantes_para_asignar:
-                    mentor_asignado = random.choice([mentor for mentor in mentoresGenerados if mentor['Carrera'] == estudiante['Carrera']])
-                    estudiante['Carnet de Mentor'] = mentor_asignado['Carnet']
+                    # Obtener los estudiantes que tienen "0" en el campo "Carnet de Mentor"
+                    estudiantes_para_asignar = [estudiante for estudiante in estudiantes_sede if estudiante['Carnet de Mentor'] == "0"]
 
-                # Actualizar la tabla con los estudiantes y sus mentores
-                tabla.delete(*tabla.get_children())  # Limpiar la tabla
-                for estudiante in estudiantesGenerados:
-                    nombre_mentor = ""
-                    if estudiante['Carnet de Mentor'] != "0":
-                        mentor = next((mentor for mentor in mentoresGenerados if mentor['Carnet'] == estudiante['Carnet de Mentor']), None)
-                        if mentor:
-                            nombre_mentor = mentor['Nombre Completo']
-                    tabla.insert("", "end", values=(estudiante['Carnet'], estudiante['Nombre Completo'], estudiante['Carrera'], estudiante['Teléfono'], estudiante['Correo Electrónico'], estudiante['Carnet de Mentor'], nombre_mentor))
+                    # Asignar mentores a estos estudiantes, asegurándonos de que sean de la misma carrera
+                    for estudiante in estudiantes_para_asignar:
+                        mentor_asignado = random.choice([mentor for mentor in mentoresGenerados[sedeElegida] if mentor['Carrera'] == estudiante['Carrera']])
+                        estudiante['Carnet de Mentor'] = mentor_asignado['Carnet']
+
+                    # Actualizar la tabla con los estudiantes y sus mentores
+                    tabla.delete(*tabla.get_children())  # Limpiar la tabla
+                    for estudiante in estudiantes_sede:
+                        nombre_mentor = ""
+                        if estudiante['Carnet de Mentor'] != "0":
+                            mentor = next((mentor for mentor in mentoresGenerados[sedeElegida] if mentor['Carnet'] == estudiante['Carnet de Mentor']), None)
+                            if mentor:
+                                nombre_mentor = mentor['Nombre Completo']
+                        tabla.insert("", "end", values=(estudiante['Carnet'], estudiante['Nombre Completo'], estudiante['Carrera'], estudiante['Teléfono'], estudiante['Correo Electrónico'], estudiante['Carnet de Mentor'], nombre_mentor))
         else:
             messagebox.showerror("Error", f"La sede '{sedeElegida}' no se encuentra en el archivo Excel.")
 
@@ -248,83 +272,109 @@ def asignarMentores():
     tabla.heading("#6", text="Nombre del Mentor")
     tabla.pack()
 def actualizarEstudiante():
-    ventana_actualizar = tk.Toplevel(ventana)
-    ventana_actualizar.title("Actualizar Estudiante")
+    def abrirVentanaActualizar(sedeElegida):
+        ventana_actualizar = tk.Toplevel(ventana)
+        ventana_actualizar.title("Actualizar Estudiante para la Sede " + sedeElegida)
 
-    tk.Label(ventana_actualizar, text="Carné del Estudiante:").pack()
-    carné_var = tk.StringVar()
-    carné_entry = tk.Entry(ventana_actualizar, textvariable=carné_var)
-    carné_entry.pack()
+        def actualizarVentana(estudiante_encontrado):
+            for widget in ventana_actualizar.winfo_children():
+                widget.destroy()
 
-    # Función para buscar y modificar al estudiante
-    def buscar_y_modificar_estudiante():
-        carné = carné_var.get()
+            tk.Label(ventana_actualizar, text="Carné del Estudiante:").pack()
+            carné_var = tk.StringVar(value=estudiante_encontrado['Carnet'])
+            carné_entry = tk.Entry(ventana_actualizar, textvariable=carné_var)
+            carné_entry.pack()
 
-        estudiante_encontrado = None
-        tipo_estudiante = ""
-
-        # Buscar al estudiante por carné en la lista de estudiantesGenerados
-        for estudiante in estudiantesGenerados:
-            if estudiante['Carnet'] == carné:
-                estudiante_encontrado = estudiante
-                tipo_estudiante = "Primer Ingreso"
-                break
-
-        if estudiante_encontrado is None:
-            # Si no se encontró en la lista de estudiantesGenerados, buscar en la lista de mentoresGenerados
-            for mentor in mentoresGenerados:
-                if mentor['Carnet'] == carné:
-                    estudiante_encontrado = mentor
-                    tipo_estudiante = "Mentor"
-                    break
-
-        if estudiante_encontrado is not None:
-            tk.Label(ventana_actualizar, text=f"Tipo de Estudiante: {tipo_estudiante}").pack()
+            tk.Label(ventana_actualizar, text="Tipo de Estudiante: Mentor" if 'Carnet de Mentor' in estudiante_encontrado else "Tipo de Estudiante: Estudiante de Primer Ingreso").pack()
             tk.Label(ventana_actualizar, text="Nombre Completo:").pack()
             nombre_var = tk.StringVar(value=estudiante_encontrado['Nombre Completo'])
             nombre_entry = tk.Entry(ventana_actualizar, textvariable=nombre_var)
             nombre_entry.pack()
 
-            if tipo_estudiante == "Mentor":
-                # Permitir modificar correo solo para mentores
-                tk.Label(ventana_actualizar, text="Correo Electrónico:").pack()
-                correo_var = tk.StringVar(value=estudiante_encontrado['Correo Electrónico'])
-                correo_entry = tk.Entry(ventana_actualizar, textvariable=correo_var)
-                correo_entry.pack()
+            if 'Teléfono' in estudiante_encontrado:
+                tk.Label(ventana_actualizar, text="Teléfono:").pack()
+                telefono_var = tk.StringVar(value=estudiante_encontrado.get('Teléfono', ''))
+                telefono_entry = tk.Entry(ventana_actualizar, textvariable=telefono_var)
+                telefono_entry.pack()
 
-                # Función para guardar los cambios (solo para mentores)
-                def guardar_cambios():
-                    nombre = nombre_var.get()
-                    correo = correo_var.get()
+            tk.Label(ventana_actualizar, text="Correo Electrónico:").pack()
+            correo_var = tk.StringVar(value=estudiante_encontrado['Correo Electrónico'])
+            correo_entry = tk.Entry(ventana_actualizar, textvariable=correo_var)
+            correo_entry.pack()
 
-                    # Actualizar los datos del mentor
-                    estudiante_encontrado['Nombre Completo'] = nombre
-                    estudiante_encontrado['Correo Electrónico'] = correo
+            # Función para guardar los cambios
+            def guardar_cambios():
+                nombre = nombre_var.get()
+                estudiante_encontrado['Nombre Completo'] = nombre
 
-                    messagebox.showinfo("Éxito", "Los cambios se han guardado exitosamente.")
-                    ventana_actualizar.destroy()
-            else:
-                # Función para guardar los cambios (para estudiantes de primer ingreso)
-                def guardar_cambios():
-                    nombre = nombre_var.get()
+                if 'Teléfono' in estudiante_encontrado:
+                    # Si es un estudiante de primer ingreso, permitir la edición del teléfono
+                    telefono = telefono_var.get()
+                    estudiante_encontrado['Teléfono'] = telefono
 
-                    # Actualizar los datos del estudiante (de primer ingreso)
-                    estudiante_encontrado['Nombre Completo'] = nombre
+                correo = correo_var.get()
+                estudiante_encontrado['Correo Electrónico'] = correo
 
-                    messagebox.showinfo("Éxito", "Los cambios se han guardado exitosamente.")
-                    ventana_actualizar.destroy()
+                messagebox.showinfo("Éxito", "Los cambios se han guardado exitosamente.")
+                ventana_actualizar.destroy()
 
             # Botón para guardar los cambios
             guardar_button = tk.Button(ventana_actualizar, text="Guardar Cambios", command=guardar_cambios)
             guardar_button.pack()
-        else:
-            messagebox.showerror("Error", "El carné ingresado no se encuentra en la lista de estudiantes ni mentores.")
 
-    buscar_button = tk.Button(ventana_actualizar, text="Buscar Estudiante", command=buscar_y_modificar_estudiante)
-    buscar_button.pack()
+        tk.Label(ventana_actualizar, text="Carné del Estudiante:").pack()
+        carné_var = tk.StringVar()
+        carné_entry = tk.Entry(ventana_actualizar, textvariable=carné_var)
+        carné_entry.pack()
 
-    ventana_actualizar.mainloop()
+        def buscar_y_modificar_estudiante():
+            carné = carné_var.get()
+            estudiante_encontrado = None
 
+            # Buscar al estudiante por carné en la lista de estudiantesGenerados de la sede seleccionada
+            for estudiante in estudiantesGenerados[sedeElegida]:
+                if estudiante['Carnet'] == carné:
+                    estudiante_encontrado = estudiante
+                    break
+
+            # Buscar al mentor por carné en la lista de mentoresGenerados de la sede seleccionada
+            for mentor in mentoresGenerados[sedeElegida]:
+                if mentor['Carnet'] == carné:
+                    estudiante_encontrado = mentor
+                    break
+
+            if estudiante_encontrado is not None:
+                actualizarVentana(estudiante_encontrado)
+            else:
+                messagebox.showerror("Error", "El carné ingresado no se encuentra en la lista de estudiantes ni mentores.")
+
+        buscar_button = tk.Button(ventana_actualizar, text="Buscar Estudiante", command=buscar_y_modificar_estudiante)
+        buscar_button.pack()
+
+    ventanaSeleccionSede = tk.Toplevel(ventana)
+    ventanaSeleccionSede.title("Seleccionar Sede")
+
+    tk.Label(ventanaSeleccionSede, text="Selecciona una sede:").pack()
+    opcionesSedes = [
+        "CAMPUS TECNOLÓGICO LOCAL SAN CARLOS",
+        "CAMPUS TECNOLÓGICO LOCAL SAN JOSÉ",
+        "CENTRO ACADÉMICO DE LIMÓN",
+        "CAMPUS TECNOLÓGICO CENTRAL CARTAGO",
+        "CENTRO ACADÉMICO DE ALAJUELA"
+    ]
+    sedeSeleccionada = tk.StringVar()
+    sedeSeleccionada.set(opcionesSedes[0])
+    listaSede = ttk.Combobox(ventanaSeleccionSede, textvariable=sedeSeleccionada, values=opcionesSedes)
+    listaSede.config(width=42)
+    listaSede.pack()
+
+    def abrirVentanaActualizarDesdeSede():
+        sedeElegida = sedeSeleccionada.get()
+        ventanaSeleccionSede.destroy()
+        abrirVentanaActualizar(sedeElegida)
+
+    botonSeleccionarSede = tk.Button(ventanaSeleccionSede, text="Seleccionar Sede", command=abrirVentanaActualizarDesdeSede)
+    botonSeleccionarSede.pack()
 
 def generarReportes():
     return
