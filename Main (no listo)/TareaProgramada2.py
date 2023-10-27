@@ -317,7 +317,7 @@ def actualizarEstudiante():
         abrirVentanaActualizar(sedeElegida)
     botonSeleccionarSede = tk.Button(ventanaSeleccionSede, text="Seleccionar Sede", command=abrirVentanaActualizarDesdeSede)
     botonSeleccionarSede.pack()
-##########################################################################################    
+    
 def generarReportes():
     def reporteSede():
         sede = sede_combobox.get()
@@ -417,7 +417,7 @@ def generarReportes():
         sede_combobox.pack()
 
     botonSede.config(command=mostrar_sede_combobox)
-##########################################################################################
+
 def crearBaseDatos():
     try:
         with open('estudiantesPorSede.pkl', 'rb') as estudiantes_file:
