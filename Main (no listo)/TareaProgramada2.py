@@ -15,7 +15,8 @@ import pickle
 from PIL import Image, ImageTk
 import csv
 import datetime
-import webbrowser
+from email.message import EmailMessage
+import smtplib
 
 #Variables globales
 fake = Faker()
@@ -456,10 +457,49 @@ def crearBaseDatos():
         writer.writerow(["Sede", "Carrera", "Carnet", "Nombre", "Correo", "Teléfono", "Es Estudiante"])
         writer.writerows(datos)
     messagebox.showinfo("Éxito", f"La base de datos se ha guardado en '{nombre_archivo}'.")
+    return nombre_archivo
+
+def buscarCSV():
+    nombreArchivo = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("csv files","*.csv"),("all files","*.*")))
+    return nombreArchivo
 
 def enviarCorreo():
-    
-    return  
+    ventanaCorreo = tk.Toplevel(ventana)
+    ventanaCorreo.title("Enviar Correo")
+    tk.Label(ventanaCorreo, text=asunto).pack()
+    tk.Label(ventanaCorreo, text="Para:").pack()
+    tk.Label(ventanaCorreo, text="Mensaje:").pack()
+    mensaje_var = tk.StringVar()
+    mensaje_entry = tk.Entry(ventanaCorreo, textvariable=mensaje_var)
+    mensaje_entry.pack()
+    botonEnviarCorreo = tk.Button(ventanaCorreo, text="Enviar Correo", command=lambda: enviarCorreo(nombreArchivo))
+    botonEnviarCorreo.pack()
+    nombreArchivo = buscarCSV()
+    remitente = "integratec2024@gmail.com"
+    asunto = "Base de datos de IntegraTEC"
+    destinatario_var = tk.StringVar()
+    destinatario_entry = tk.Entry(ventanaCorreo, textvariable=destinatario_var)
+    destinatario_entry.pack()
+    destinatario = destinatario_var.get()
+    mensaje = mensaje_var.get()
+    email = EmailMessage()
+    email['from'] = remitente
+    email['subject'] = asunto
+    email['to'] = destinatario
+    email.set_content(mensaje)
+    archivo_adjunto = f'C:\\Users\\k1r1e\\Documents\\GitHub\\TareaProgramada2\\{nombreArchivo}.csv'
+    with open(archivo_adjunto, 'rb') as archivo:
+        contenido = archivo.read()
+        nombreArchivo = archivo_adjunto.split("\\")[-1]
+        email.add_attachment(contenido, maintype='application', subtype='octet-stream', filename=nombreArchivo)
+    try:
+        smtp = smtplib.SMTP_SSL('smtp.gmail.com')
+        smtp.login(remitente, "teix qjdp sgcy cvf")
+        smtp.send_message(email)
+        smtp.quit()
+        messagebox.showinfo("Éxito", "El correo se ha enviado exitosamente.")
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo enviar el correo. Error: {str(e)}")
 
 #Interfaz gráfica
 ventana = tk.Tk()
