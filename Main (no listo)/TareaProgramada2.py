@@ -17,11 +17,12 @@ import csv
 import datetime
 from email.message import EmailMessage
 import smtplib
-
+import os
+import sys
 #Variables globales
 fake = Faker()
 cantidadEstudiantes = None
-excel = r'C:\Users\k1r1e\Documents\GitHub\TareaProgramada2\Main (no listo)\sedes.xlsx' #Cambiar el directorio en donde está el archivo sedes.xlsx
+excel = excel = r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\sedes.xlsx'
 carreras = pd.read_excel(excel)
 asignacionesEstudiantes = []
 cantidadEstudiantes = None 
@@ -419,17 +420,12 @@ def generarReportes():
         sede_combobox.pack()
 
     botonSede.config(command=mostrar_sede_combobox)
-
+nombre_archivo_global = ""
 def crearBaseDatos():
+    global nombre_archivo_global  # Indica que usaremos la variable global
     try:
         with open('estudiantesGenerados.pkl', 'rb') as estudiantes_file:
             estudiantesPorSede = pickle.load(estudiantes_file)
-    except FileNotFoundError:
-        messagebox.showerror("Error", "No se encontraron datos. Asegúrate de que lo hayas creado antes.")
-        return
-    try:
-        with open('mentores.pkl', 'rb') as mentores_file:
-            mentoresGenerados = pickle.load(mentores_file)
     except FileNotFoundError:
         messagebox.showerror("Error", "No se encontraron datos. Asegúrate de que lo hayas creado antes.")
         return
@@ -457,56 +453,80 @@ def crearBaseDatos():
         writer.writerow(["Sede", "Carrera", "Carnet", "Nombre", "Correo", "Teléfono", "Es Estudiante"])
         writer.writerows(datos)
     messagebox.showinfo("Éxito", f"La base de datos se ha guardado en '{nombre_archivo}'.")
+    
+    # Asignar el valor a la variable global
+    nombre_archivo_global = nombre_archivo
+
     return nombre_archivo
 
 def buscarCSV():
     nombreArchivo = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("csv files","*.csv"),("all files","*.*")))
     return nombreArchivo
-
 def enviarCorreo():
-    nombreArchivo = buscarCSV()
-    remitente = "integratec2024@gmail.com"
+    remitente = "alemarra99@hotmail.com"
     asunto = "Base de datos de IntegraTEC"
+
+    def enviarCorreoReal():
+        destinatario = destinatario_var.get()
+        mensaje = mensaje_var.get()
+        contraseña = "08dic1999"  # Reemplaza con tu contraseña de correo
+
+        if not destinatario or not mensaje:
+            messagebox.showerror("Error", "Por favor, ingresa el destinatario y el mensaje.")
+            return
+
+        email = EmailMessage()
+        email['from'] = remitente
+        email['subject'] = asunto
+        email['to'] = destinatario
+        email.set_content(mensaje)
+
+        # Adjuntar el archivo que se generó en crearBaseDatos
+        archivo_adjunto = nombre_archivo_global
+        with open(archivo_adjunto, 'rb') as archivo:
+            contenido = archivo.read()
+            nombreArchivo = archivo_adjunto.split("\\")[-1]
+            email.add_attachment(contenido, maintype='application', subtype='octet-stream', filename=nombreArchivo)
+
+        try:
+            smtp = smtplib.SMTP('smtp.office365.com', 587)  # Usar el puerto 587
+            smtp.starttls()  # Habilitar TLS (Transport Layer Security)
+            smtp.login(remitente, contraseña)
+            smtp.send_message(email)
+            smtp.quit()
+            messagebox.showinfo("Éxito", "El correo se ha enviado exitosamente.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo enviar el correo. Error: {str(e)}")
+
+
+    # Crear la ventana para el correo
+    ventanaCorreo = tk.Toplevel(ventana)
+    ventanaCorreo.title("Enviar Correo")
+
+    tk.Label(ventanaCorreo, text=asunto).pack()
+
+    # Campo para el destinatario
+    tk.Label(ventanaCorreo, text="Para:").pack()
     destinatario_var = tk.StringVar()
     destinatario_entry = tk.Entry(ventanaCorreo, textvariable=destinatario_var)
     destinatario_entry.pack()
-    destinatario = destinatario_var.get()
-    mensaje = mensaje_var.get()
-    email = EmailMessage()
-    email['from'] = remitente
-    email['subject'] = asunto
-    email['to'] = destinatario
-    email.set_content(mensaje)
-    archivo_adjunto = f'C:\\Users\\k1r1e\\Documents\\GitHub\\TareaProgramada2\\{nombreArchivo}.csv'
-    with open(archivo_adjunto, 'rb') as archivo:
-        contenido = archivo.read()
-        nombreArchivo = archivo_adjunto.split("\\")[-1]
-        email.add_attachment(contenido, maintype='application', subtype='octet-stream', filename=nombreArchivo)
-    try:
-        smtp = smtplib.SMTP_SSL('smtp.gmail.com')
-        smtp.login(remitente, "teix qjdp sgcy cvf")
-        smtp.send_message(email)
-        smtp.quit()
-        messagebox.showinfo("Éxito", "El correo se ha enviado exitosamente.")
-    except Exception as e:
-        messagebox.showerror("Error", f"No se pudo enviar el correo. Error: {str(e)}")
-    ventanaCorreo = tk.Toplevel(ventana)
-    ventanaCorreo.title("Enviar Correo")
-    tk.Label(ventanaCorreo, text=asunto).pack()
-    tk.Label(ventanaCorreo, text="Para:").pack()
+
+    # Campo para el mensaje
     tk.Label(ventanaCorreo, text="Mensaje:").pack()
     mensaje_var = tk.StringVar()
     mensaje_entry = tk.Entry(ventanaCorreo, textvariable=mensaje_var)
     mensaje_entry.pack()
-    botonEnviarCorreo = tk.Button(ventanaCorreo, text="Enviar Correo", command=lambda: enviarCorreo(nombreArchivo))
+
+    botonEnviarCorreo = tk.Button(ventanaCorreo, text="Enviar Correo", command=enviarCorreoReal)
     botonEnviarCorreo.pack()
 
 #Interfaz gráfica
 ventana = tk.Tk()
 ventana.title("Atención a la Generación 2024")
 ventana.geometry("1200x600")  
+imagen= r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\tec.png'
+imagen_fondo = Image.open(imagen)
 
-imagen_fondo = Image.open("tec.png")
 imagen_fondo = imagen_fondo.resize((ventana.winfo_screenwidth(), ventana.winfo_screenheight()))
 imagen_fondo = ImageTk.PhotoImage(imagen_fondo)
 
@@ -518,8 +538,8 @@ fondo_gris.place(relx=0.25, rely=0, relwidth=0.5, relheight=1)
 
 frame_botones = tk.Frame(fondo_gris, bg="#D0ECE7")
 frame_botones.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.8)
-
-logo_image = Image.open("integratec.png")
+logo= r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\integratec.png'
+logo_image = Image.open(logo)
 logo_image = logo_image.resize((int(ventana.winfo_screenwidth() * 0.3), int(ventana.winfo_screenheight() * 0.2)))
 logo_image = ImageTk.PhotoImage(logo_image)
 
