@@ -464,16 +464,6 @@ def buscarCSV():
     return nombreArchivo
 
 def enviarCorreo():
-    ventanaCorreo = tk.Toplevel(ventana)
-    ventanaCorreo.title("Enviar Correo")
-    tk.Label(ventanaCorreo, text=asunto).pack()
-    tk.Label(ventanaCorreo, text="Para:").pack()
-    tk.Label(ventanaCorreo, text="Mensaje:").pack()
-    mensaje_var = tk.StringVar()
-    mensaje_entry = tk.Entry(ventanaCorreo, textvariable=mensaje_var)
-    mensaje_entry.pack()
-    botonEnviarCorreo = tk.Button(ventanaCorreo, text="Enviar Correo", command=lambda: enviarCorreo(nombreArchivo))
-    botonEnviarCorreo.pack()
     nombreArchivo = buscarCSV()
     remitente = "integratec2024@gmail.com"
     asunto = "Base de datos de IntegraTEC"
@@ -500,6 +490,16 @@ def enviarCorreo():
         messagebox.showinfo("Éxito", "El correo se ha enviado exitosamente.")
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo enviar el correo. Error: {str(e)}")
+    ventanaCorreo = tk.Toplevel(ventana)
+    ventanaCorreo.title("Enviar Correo")
+    tk.Label(ventanaCorreo, text=asunto).pack()
+    tk.Label(ventanaCorreo, text="Para:").pack()
+    tk.Label(ventanaCorreo, text="Mensaje:").pack()
+    mensaje_var = tk.StringVar()
+    mensaje_entry = tk.Entry(ventanaCorreo, textvariable=mensaje_var)
+    mensaje_entry.pack()
+    botonEnviarCorreo = tk.Button(ventanaCorreo, text="Enviar Correo", command=lambda: enviarCorreo(nombreArchivo))
+    botonEnviarCorreo.pack()
 
 #Interfaz gráfica
 ventana = tk.Tk()
