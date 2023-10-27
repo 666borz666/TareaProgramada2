@@ -100,6 +100,7 @@ def estudiantesCarrera():
             tabla.heading("#5", text="Correo Electrónico")
             tabla.heading("#6", text="Carnet de Mentor")
             tabla.pack()
+            pickle.dump(estudiantesGenerados, open("estudiantesGenerados.pkl", "wb"))
             for estudiante in estudiantesGenerados[sedeElegida]:
                 tabla.insert("", "end", values=(estudiante['Carnet'], estudiante['Nombre Completo'], estudiante['Carrera'], estudiante['Teléfono'], estudiante['Correo Electrónico'], estudiante['Carnet de Mentor']))
         else:
@@ -420,7 +421,7 @@ def generarReportes():
 
 def crearBaseDatos():
     try:
-        with open('estudiantesPorSede.pkl', 'rb') as estudiantes_file:
+        with open('estudiantesGenerados.pkl', 'rb') as estudiantes_file:
             estudiantesPorSede = pickle.load(estudiantes_file)
     except FileNotFoundError:
         messagebox.showerror("Error", "No se encontraron datos. Asegúrate de que lo hayas creado antes.")
