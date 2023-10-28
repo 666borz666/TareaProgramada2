@@ -167,10 +167,10 @@ def crearMentores():
             ventanaResultados = tk.Toplevel(ventana)
             ventanaResultados.title("Mentores de la Sede")
             tabla = ttk.Treeview(ventanaResultados, columns=["Carnet", "Nombre Completo", "Carrera", "Correo Electrónico"])
-            tabla.heading("#0", text="Carnet")
-            tabla.heading("#1", text="Nombre Completo")
-            tabla.heading("#2", text="Carrera")
-            tabla.heading("#3", text="Correo Electrónico")
+            tabla.heading("#1", text="Carnet")
+            tabla.heading("#2", text="Nombre Completo")
+            tabla.heading("#3", text="Carrera")
+            tabla.heading("#4", text="Correo Electrónico")
             tabla.pack()
             for mentor in mentoresGenerados[sedeElegida]:
                 tabla.insert("", "end", values=(mentor['Carnet'], mentor['Nombre Completo'], mentor['Carrera'], mentor['Correo Electrónico']))
@@ -245,6 +245,7 @@ def actualizarEstudiante():
     def abrirVentanaActualizar(sedeElegida):
         ventana_actualizar = tk.Toplevel(ventana)
         ventana_actualizar.title("Actualizar Estudiante para la Sede " + sedeElegida)
+        ventana_actualizar.geometry("200x200")
         def actualizarVentana(estudiante_encontrado):
             for widget in ventana_actualizar.winfo_children():
                 widget.destroy()
@@ -320,106 +321,131 @@ def actualizarEstudiante():
         abrirVentanaActualizar(sedeElegida)
     botonSeleccionarSede = tk.Button(ventanaSeleccionSede, text="Seleccionar Sede", command=abrirVentanaActualizarDesdeSede)
     botonSeleccionarSede.pack()
+def cargarDatosDesdeExcel():
+    # Reemplaza "tu_archivo.xlsx" con la ruta y nombre de tu archivo Excel
+    excel_file = excel
     
-def generarReportes():
-    def reporteSede():
+    # Cargar los datos desde las columnas de A a E del archivo Excel
+    df = pd.read_excel(excel_file, usecols="A:E")
+    
+    # Obtener todas las sedes y carreras desde las columnas A a E
+    sedes = df.iloc[:, 0].unique().tolist()
+    carreras = df.iloc[:, 1:6].values.tolist()  # Obtener todas las carreras desde las columnas B a E
+    
+    return sedes, carreras
+carreras = pd.read_excel(excel)
+
+# Extraer las carreras de cada sede y almacenarlas en un diccionario
+carreras_por_sede = {}
+for sede in carreras.columns:
+    carreras_sede = carreras[sede].dropna().tolist()
+    carreras_por_sede[sede] = carreras_sede
+def crearReporte():
+    def generar_reporte_sede():
         sede = sede_combobox.get()
-        if sede:
-            estudiantes_sede = estudiantesPorSede.get(sede, [])
-            if estudiantes_sede:
-                generar_reporte_estudiantes(sede, estudiantes_sede)
+        estudiantes_sede = estudiantesGenerados.get(sede, [])
+        if not estudiantes_sede:
+            return
+        with open(f"reporte_sede_{sede}.html", "w") as file:
+            file.write("<html><body>")
+            file.write(f"<h1>Reporte de la Sede: {sede}</h1>")
+            file.write("<table border='1'>")
+            file.write("<tr>")
+            file.write("<th>Carrera</th>")
+            file.write("<th>Carnet</th>")
+            file.write("<th>Nombre Completo</th>")
+            file.write("<th>Teléfono</th>")
+            file.write("<th>Correo Electrónico</th>")
+            file.write("</tr>")
+
+            for estudiante in estudiantes_sede:
+                file.write("<tr>")
+                file.write(f"<td>{estudiante['Carrera']}</td>")
+                file.write(f"<td>{estudiante['Carnet']}</td>")
+                file.write(f"<td>{estudiante['Nombre Completo']}</td>")
+                file.write(f"<td>{estudiante['Teléfono']}</td>")
+                file.write(f"<td>{estudiante['Correo Electrónico']}</td>")
+                file.write("</tr>")
+
+            file.write("</table>")
+            file.write("</body></html>")
+
+    def generar_reporte_carrera():
+        selected_sede = sede_combobox.get()
+        selected_carrera = carrera_combobox.get()
+        if selected_sede and selected_carrera:
+            estudiantes_sede = estudiantesGenerados.get(selected_sede, [])
+            estudiantes_carrera = [estudiante for estudiante in estudiantes_sede if estudiante['Carrera'] == selected_carrera]
+            if not estudiantes_carrera:
+                return
+
+            with open(f"reporte_{selected_carrera}_en_{selected_sede}.html", "w") as file:
+                file.write("<html><body>")
+                file.write(f"<h1>Reporte de la Carrera: {selected_carrera} en {selected_sede}</h1>")
+                file.write("<ol>")
+
+                for estudiante in estudiantes_carrera:
+                    file.write(f"<li>{estudiante['Nombre Completo']} - {estudiante['Carnet']} - {estudiante['Correo Electrónico']}</li>")
+
+                file.write("</ol>")
+                file.write("</body></html>")
+
+
+    def generar_reporte_mentor():
+        for sede, mentores in mentoresGenerados.items():
+            with open(f"reporte_mentores_en_{sede}.html", "w") as file:
+                file.write("<html><body>")
+                file.write(f"<h1>Reporte de Mentores en la Sede: {sede}</h1>")
+                file.write("<table>")
+                file.write("<tr><th>Nombre del Mentor</th><th>Carrera</th><th>Correo Electrónico</th></tr>")
+                
+                for mentor in mentores:
+                    file.write(f"<tr><td>{mentor['Nombre Completo']}</td><td>{mentor['Carrera']}</td><td>{mentor['Correo Electrónico']}</td></tr>")
+
+                file.write("</table>")
+                file.write("</body></html>")
+
+    def mostrar_carreras_segun_sede(event):
+        selected_sede = sede_combobox.get()
+        if selected_sede:
+            carreras_sede = carreras[selected_sede].dropna().tolist()
+            carrera_combobox['values'] = carreras_sede
+            if carreras_sede:
+                carrera_combobox.set(carreras_sede[0])
             else:
-                messagebox.showwarning("Advertencia", f"No hay estudiantes para la sede {sede}.")
+                carrera_combobox.set('')
 
-    def reporteCarrera():
-        sede = sede_combobox.get()
-        if sede:
-            estudiantes_sede = estudiantesPorSede.get(sede, [])
-            carreras = set(estudiante['Carrera'] for estudiante in estudiantes_sede)
-            seleccionar_carrera(sede, carreras)
+    ventana = tk.Tk()
+    ventana.title("Generar Informes")
 
-    def seleccionar_carrera(sede, carreras):
-        ventana_carrera = tk.Toplevel(ventana)
-        ventana_carrera.title(f"Seleccionar Carrera en {sede}")
-        carrera_combobox = ttk.Combobox(ventana_carrera, values=list(carreras))
-        carrera_combobox.pack()
-        generar_carrera_button = tk.Button(ventana_carrera, text="Generar Reporte por Carrera", command=lambda: reporteCarreraCarrera(sede, carrera_combobox.get()))
-        generar_carrera_button.pack()
+    # Combobox para seleccionar la sede
+    sede_label = tk.Label(ventana, text="Selecciona una sede:")
+    sede_label.pack()
+    sedes = list(estudiantesGenerados.keys())
+    sede_combobox = ttk.Combobox(ventana, values=sedes)
+    sede_combobox.config(width=42)
+    sede_combobox.pack()
 
-    def reporteCarreraCarrera(sede, carrera):
-        estudiantes_sede = estudiantesPorSede.get(sede, [])
-        estudiantes_carrera = [estudiante for estudiante in estudiantes_sede if estudiante['Carrera'] == carrera]
-        if estudiantes_carrera:
-            generar_reporte_estudiantes(sede, estudiantes_carrera)
-        else:
-            messagebox.showwarning("Advertencia", f"No hay estudiantes en la carrera {carrera} para la sede {sede}.")
+    # Asocia la función mostrar_carreras_segun_sede al evento de selección de la sede
+    sede_combobox.bind("<<ComboboxSelected>>", mostrar_carreras_segun_sede)
 
-    def generar_reporte_estudiantes(sede, estudiantes):
-        reporte = f"<html><head><title>Reporte de Estudiantes en {sede}</title></head><body>"
-        reporte += f"<h1>Reporte de Estudiantes en {sede}</h1>"
+    # Botones para generar informes
+    sede_button = tk.Button(ventana, text="Generar Informe de Sede", command=generar_reporte_sede)
+    sede_button.pack()
+    carrera_button = tk.Button(ventana, text="Generar Informe de Carrera", command=generar_reporte_carrera)
+    carrera_button.pack()
+    mentor_button = tk.Button(ventana, text="Generar Informe de Mentor", command=generar_reporte_mentor)
+    mentor_button.pack()
 
-        reporte += "<table border='1'><tr><th>Carnet</th><th>Nombre Completo</th><th>Carrera</th><th>Teléfono</th><th>Correo Electrónico</th><th>Carnet de Mentor</th></tr>"
-        for estudiante in estudiantes:
-            reporte += f"<tr><td>{estudiante.get('Carnet', '')}</td><td>{estudiante.get('Nombre Completo', '')}</td><td>{estudiante.get('Carrera', '')}</td><td>{estudiante.get('Teléfono', '')}</td><td>{estudiante.get('Correo Electrónico', '')}</td><td>{estudiante.get('Carnet de Mentor', '')}</td></tr>"
-        reporte += "</table>"
+    # Combobox para seleccionar una carrera
+    carrera_label = tk.Label(ventana, text="Selecciona una carrera:")
+    carrera_label.pack()
+    carrera_combobox = ttk.Combobox(ventana, values=[])
+    carrera_combobox.config(width=42)
+    carrera_combobox.pack()
 
-        reporte += "</body></html>"
-
-        with open(f"reporte_{sede.replace(' ', '_')}.html", "w") as archivo:
-            archivo.write(reporte)
-
-        messagebox.showinfo("Éxito", f"Reporte de Estudiantes en {sede} generado con éxito. Puedes encontrarlo en el archivo reporte_{sede.replace(' ', '_')}.html")
-
-    def generar_reporte_mentores():
-        mentores = cargar_mentores()
-        if mentores:
-            reporte = "<html><head><title>Reporte de Mentores</title></head><body>"
-            reporte += "<h1>Reporte de Mentores</h1>"
-
-            for sede, mentores_sede in mentores.items():
-                reporte += f"<h2>Sede: {sede}</h2>"
-                for mentor in mentores_sede:
-                    reporte += f"<h3>Mentor: {mentor.get('Nombre Completo', '')}</h3>"
-                    reporte += "<ul>"
-                    estudiantes_asignados = mentor.get('Estudiantes Asignados', [])
-                    for estudiante in estudiantes_asignados:
-                        reporte += f"<li>{estudiante.get('Carnet', '')} - {estudiante.get('Nombre Completo', '')}</li>"
-                    reporte += "</ul>"
-
-            reporte += "</body></html>"
-
-            with open("reporte_mentores.html", "w") as archivo:
-                archivo.write(reporte)
-
-            messagebox.showinfo("Éxito", "Reporte de Mentores generado con éxito. Puedes encontrarlo en el archivo reporte_mentores.html")
-        else:
-            messagebox.showwarning("Advertencia", "No hay datos de mentores disponibles.")
-
-    def cargar_mentores():
-        try:
-            with open("mentores.pkl", "rb") as archivo:
-                return pickle.load(archivo)
-        except (FileNotFoundError, EOFError):
-            return None
-
-    ventanaReportes = tk.Toplevel(ventana)
-    ventanaReportes.title("Generar Reportes")
-
-    botonSede = tk.Button(ventanaReportes, text="Reporte por Sede", command=reporteSede)
-    botonCarrera = tk.Button(ventanaReportes, text="Reporte por Carrera", command=reporteCarrera)
-    botonMentor = tk.Button(ventanaReportes, text="Reporte por Mentor", command=generar_reporte_mentores)
-
-    botonSede.pack()
-    botonCarrera.pack()
-    botonMentor.pack()
-
-    sede_combobox = ttk.Combobox(ventanaReportes, values=list(estudiantesPorSede.keys()))
-    sede_combobox.set("Selecciona una sede")
-
-    def mostrar_sede_combobox():
-        sede_combobox.pack()
-
-    botonSede.config(command=mostrar_sede_combobox)
+    ventana.mainloop()
+        
 nombre_archivo_global = ""
 def crearBaseDatos():
     global nombre_archivo_global  # Indica que usaremos la variable global
@@ -432,18 +458,18 @@ def crearBaseDatos():
     datos = []
     for sede, estudiantes in estudiantesPorSede.items():
         for estudiante in estudiantes:
-            carrera = estudiante.get('Carrera', 'Sin Carrera')
-            carnet = estudiante.get('Carnet', 'Sin Carnet')
-            nombre_completo = estudiante.get('Nombre Completo', 'Sin Nombre')
-            correo = estudiante.get('Correo Electrónico', 'Sin Correo')
-            telefono = estudiante.get('Teléfono', 'Sin Teléfono')
+            carrera = estudiante.get('Carrera')
+            carnet = estudiante.get('Carnet')
+            nombre_completo = estudiante.get('Nombre Completo')
+            correo = estudiante.get('Correo Electrónico',)
+            telefono = estudiante.get('Teléfono')
             datos.append([sede, carrera, carnet, nombre_completo, correo, telefono, True])
     for sede, mentores in mentoresGenerados.items():
         for mentor in mentores:
-            carrera = mentor.get('Carrera', 'Sin Carrera')
-            carnet = mentor.get('Carnet', 'Sin Carnet')
+            carrera = mentor.get('Carrera')
+            carnet = mentor.get('Carnet')
             nombre_completo = mentor.get('Nombre Completo', 'Sin Nombre')
-            correo = mentor.get('Correo Electrónico', 'Sin Correo')
+            correo = mentor.get('Correo Electrónico')
             telefono = 'Sin Teléfono'
             datos.append([sede, carrera, carnet, nombre_completo, correo, telefono, False])
     fecha_hora = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M")
@@ -502,7 +528,7 @@ def enviarCorreo():
     # Crear la ventana para el correo
     ventanaCorreo = tk.Toplevel(ventana)
     ventanaCorreo.title("Enviar Correo")
-
+    ventanaCorreo.geometry("200x200")
     tk.Label(ventanaCorreo, text=asunto).pack()
 
     # Campo para el destinatario
@@ -554,7 +580,7 @@ boton2 = ttk.Button(fondo_gris, text="Estudiantes de carrera por sede", command=
 boton3 = ttk.Button(fondo_gris, text="Crear mentores", command=crearMentores)
 boton4 = ttk.Button(fondo_gris, text="Asignar mentores", command=asignarMentores)
 boton5 = ttk.Button(fondo_gris, text="Actualizar estudiante", command=actualizarEstudiante)
-boton6 = ttk.Button(fondo_gris, text="Generar reportes", command=generarReportes)
+boton6 = ttk.Button(fondo_gris, text="Generar reportes", command=crearReporte)
 boton7 = ttk.Button(fondo_gris, text="Crear base de datos en Excel", command=crearBaseDatos)
 boton8 = ttk.Button(fondo_gris, text="Enviar correo", command=enviarCorreo)
 
