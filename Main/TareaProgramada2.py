@@ -23,7 +23,7 @@ import sys
 #Variables globales
 fake = Faker()
 cantidadEstudiantes = None
-excel = excel = r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\sedes.xlsx'
+excel = excel = r'C:\Users\k1r1e\Documents\GitHub\TareaProgramada2\Main (no listo)\sedes.xlsx' #Cambiar por la ruta del archivo Excel
 carreras = pd.read_excel(excel)
 asignacionesEstudiantes = []
 cantidadEstudiantes = None 
@@ -507,7 +507,7 @@ def enviarCorreo():
 ventana = tk.Tk()
 ventana.title("Atención a la Generación 2024")
 ventana.geometry("1200x600")  
-imagen= r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\tec.png'
+imagen= r'C:\Users\k1r1e\Documents\GitHub\TareaProgramada2\Main (no listo)\tec.png'
 imagenFondo = Image.open(imagen)
 
 imagenFondo = imagenFondo.resize((ventana.winfo_screenwidth(), ventana.winfo_screenheight()))
@@ -521,7 +521,7 @@ fondoGris.place(relx=0.25, rely=0, relwidth=0.5, relheight=1)
 
 frameBotones = tk.Frame(fondoGris, bg="#D0ECE7")
 frameBotones.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.8)
-logo= r'D:\Estudios de Ale\Compu\GitHub\Tareas Programadas\TareaProgramada2\TareaProgramada2\Main (no listo)\integratec.png'
+logo= r'C:\Users\k1r1e\Documents\GitHub\TareaProgramada2\Main (no listo)\integratec.png'
 logoImagen = Image.open(logo)
 logoImagen = logoImagen.resize((int(ventana.winfo_screenwidth() * 0.3), int(ventana.winfo_screenheight() * 0.2)))
 logoImagen = ImageTk.PhotoImage(logoImagen)
